@@ -1,25 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import SignupPage from "./pages/SignupPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import { useContext, useState, useEffect } from "react";
+import { UserContext } from "./contexts/UserContext";
+import axios from "./axiosConfig";
+import AppLoader from "./assets/AppLoader";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 function App() {
+  const [loading, setLoading] = useState(false);
+  const { user, setUser }: any = useContext(UserContext);
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axios.get("/auth/user");
+        setUser(data.userData);
+      } catch (error) {
+        setUser({
+          isUser: false,
+          email: "",
+        });
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  if (loading) return <AppLoader />;
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <ToastContainer />
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/register"
+            Component={user.isUser ? HomePage : SignupPage}
+          />
+          <Route path="/login" Component={user.isUser ? HomePage : LoginPage} />
+          <Route path="/" Component={user.isUser ? HomePage : LoginPage} />
+          <Route path="/forgot-password" Component={ForgotPasswordPage} />
+          <Route path="/reset-password" Component={ResetPasswordPage} />
+          <Route path="*" element={<p>404 Page Not Found</p>} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
