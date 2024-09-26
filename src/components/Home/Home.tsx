@@ -84,10 +84,6 @@ function Home() {
 
       if (itemsToDelete.length <= 0) return;
 
-      setImages(
-        [...images].filter((image: any) => !itemsToDelete.includes(image._id))
-      );
-
       setDialog(null);
 
       await axios.delete(`/images`, {
@@ -95,6 +91,8 @@ function Home() {
           imageIds: itemsToDelete,
         },
       });
+
+      getImages();
 
       setItemsToDelete([]);
 
